@@ -2,6 +2,10 @@ from dash import Dash, html, dcc
 import pandas as pd
 import plotly.express as px
 import dash_mantine_components as dmc
+import openpyxl
+from openpyxl.styles import Font
+from datetime import datetime, timedelta
+import random
 
 # Manipulação de dados DESCONTO/VENDAS
 arquivo_excel = "Controle.xlsx"
@@ -36,6 +40,40 @@ top_20_produtos = pd.read_excel(a).head(20)
 top_10_vendas = pd.read_excel(b).head(10)
 
 # Manipulação de dados GRÁFICO DE SIMULAÇÃO
+
+arquivo_origem = "Controle.xlsx"
+workbook_origem = openpyxl.load_workbook(arquivo_origem)
+planilha_origem = workbook_origem.active
+
+workbook_destino = openpyxl.Workbook()
+planilha_destino = workbook_destino.active
+planilha_destino.title = "Dados Associados"
+
+planilha_destino['A1'] = "Data"
+planilha_destino['B1'] = "Descrição"
+planilha_destino['A1'].font = Font(bold=True)
+planilha_destino['B1'].font = Font(bold=True)
+
+data_inicial = datetime(2023, 11, 1)
+data_final = datetime(2023, 11, 30)
+
+numero_de_linhas = 5000
+
+descricoes_origem = [cell.value for cell in planilha_origem['B'][1:planilha_origem.max_row]]
+
+planilha_destino.column_dimensions['A'].width = 12 
+
+for linha in range(2, numero_de_linhas + 2):
+    data_aleatoria = data_inicial + timedelta(days=random.randint(0, (data_final - data_inicial).days))
+    descricao_aleatoria = random.choice(descricoes_origem)
+    
+    planilha_destino.cell(row=linha, column=1, value=data_aleatoria)
+    planilha_destino.cell(row=linha, column=2, value=descricao_aleatoria)
+
+arquivo_destino = "dados_associados.xlsx"
+workbook_destino.save(arquivo_destino)
+print(f"Arquivo Excel '{arquivo_destino}' criado com 5000 linhas de dados associados às descrições da planilha de origem.")
+
 arquivo_excel_simulação = "dados_associados.xlsx"
 dfs = pd.read_excel(arquivo_excel_simulação)
 
